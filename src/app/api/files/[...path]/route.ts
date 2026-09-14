@@ -66,7 +66,31 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   }
 
   const resolved = await resolveInRoots(segments);
-  if (!resolved) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!resolved) {
+    const ghPath = segments.join("/");
+    const ghUrl = `https://raw.githubusercontent.com/shriyasingh885-beep/sgsits-notes-vault-new/main/private-uploads/${ghPath}`;
+    const fetchHeaders: Record<string, string> = {};
+    if (process.env.GITHUB_TOKEN) {
+      fetchHeaders["Authorization"] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+    try {
+      const ghRes = await fetch(ghUrl, { headers: fetchHeaders });
+      if (ghRes.ok && ghRes.body) {
+        const ext = path.extname(ghPath).toLowerCase();
+        return new NextResponse(ghRes.body as any, {
+          status: 200,
+          headers: {
+            "Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
+            "Content-Disposition": `inline; filename="${path.basename(ghPath)}"`,
+            "Cache-Control": "public, max-age=3600",
+          },
+        });
+      }
+    } catch {
+      // Fall through to 404
+    }
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const { size } = await stat(resolved);
   const ext = path.extname(resolved).toLowerCase();

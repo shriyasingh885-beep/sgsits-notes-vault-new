@@ -30,8 +30,8 @@ yarn-error.log*
 .env*.local
 
 # local dev database and runtime uploads (production uses a mounted volume)
-/prisma/dev.db
 /runtime-uploads
+
 
 # vercel
 .vercel

@@ -6,6 +6,9 @@ const nextConfig = {
     config.resolve.alias.canvas = false;
     return config;
   },
+  outputFileTracingExcludes: {
+    '*': ['private-uploads/**'],
+  },
   async redirects() {
     return [
       // Dashboard → root (the new signed-in home)
