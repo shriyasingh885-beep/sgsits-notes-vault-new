@@ -82,7 +82,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
           headers: {
             "Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
             "Content-Disposition": `inline; filename="${path.basename(ghPath)}"`,
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
           },
         });
       }
@@ -96,12 +96,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   const ext = path.extname(resolved).toLowerCase();
   const range = req.headers.get("range");
 
-  // Shared headers: inline only (never an attachment), never cached to disk
-  // by a shared cache, and not indexable.
+  // Shared headers: inline only (never an attachment), cached by CDN for high performance
   const baseHeaders: Record<string, string> = {
     "Content-Type": CONTENT_TYPES[ext] || "application/octet-stream",
     "Content-Disposition": `inline; filename="${path.basename(resolved)}"`,
-    "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+    "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400",
     "X-Content-Type-Options": "nosniff",
     "X-Robots-Tag": "noindex, nofollow, noarchive",
     "Accept-Ranges": "bytes",

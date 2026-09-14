@@ -7,16 +7,25 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function SubjectDetailPage({ params }: { params: { id: string } }) {
-  const [subject, bookmarkedIds] = await Promise.all([
-    prisma.subject.findUnique({
-      where: { id: params.id },
-      include: {
-        units: { orderBy: { number: 'asc' } },
-        resources: { where: { status: 'APPROVED' }, include: { uploadedBy: true }, orderBy: { createdAt: 'desc' } },
-      },
-    }),
-    getBookmarkedIds(),
-  ]);
+  let subject: any = null;
+  let bookmarkedIds: string[] = [];
+
+  try {
+    const [subRes, bIds] = await Promise.all([
+      prisma.subject.findUnique({
+        where: { id: params.id },
+        include: {
+          units: { orderBy: { number: 'asc' } },
+          resources: { where: { status: 'APPROVED' }, include: { uploadedBy: true }, orderBy: { createdAt: 'desc' } },
+        },
+      }),
+      getBookmarkedIds(),
+    ]);
+    subject = subRes;
+    bookmarkedIds = bIds;
+  } catch (err) {
+    console.error("Failed to load subject details:", err);
+  }
 
   if (!subject) notFound();
 

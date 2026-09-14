@@ -20,34 +20,41 @@ export default async function NotesPage({
   if (type && type !== 'all') where.type = type;
   if (year && year !== 'all') where.academicYear = parseInt(year, 10);
 
-  const [notes, bookmarkedIds, yearRows] = await Promise.all([
-    prisma.resource.findMany({
-      where,
-      // Explicit select rather than `include`: contentText holds up to 20KB of
-      // OCR'd text per row, so it is only worth shipping when we actually need
-      // it to build a match snippet.
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        fileType: true,
-        updatedAt: true,
-        subject: { select: { id: true, name: true } },
-        unit: { select: { number: true, title: true } },
-        uploadedBy: { select: { name: true } },
-        contentText: !!q,
-      },
-      orderBy: sort === 'popular' ? { views: 'desc' } : { createdAt: 'desc' },
-    }),
-    getBookmarkedIds(),
-    prisma.resource.findMany({
-      where: { academicYear: { not: null } },
-      distinct: ['academicYear'],
-      select: { academicYear: true },
-      orderBy: { academicYear: 'desc' },
-    }),
-  ]);
-  const years = yearRows.map((r) => r.academicYear!).filter(Boolean);
+  let notes: any[] = [];
+  let bookmarkedIds: string[] = [];
+  let years: number[] = [];
+
+  try {
+    const [notesRes, bookmarksRes, yearRows] = await Promise.all([
+      prisma.resource.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          fileType: true,
+          updatedAt: true,
+          subject: { select: { id: true, name: true } },
+          unit: { select: { number: true, title: true } },
+          uploadedBy: { select: { name: true } },
+          contentText: !!q,
+        },
+        orderBy: sort === 'popular' ? { views: 'desc' } : { createdAt: 'desc' },
+      }),
+      getBookmarkedIds(),
+      prisma.resource.findMany({
+        where: { academicYear: { not: null } },
+        distinct: ['academicYear'],
+        select: { academicYear: true },
+        orderBy: { academicYear: 'desc' },
+      }),
+    ]);
+    notes = notesRes;
+    bookmarkedIds = bookmarksRes;
+    years = yearRows.map((r) => r.academicYear!).filter(Boolean);
+  } catch (err) {
+    console.error("Failed to load notes:", err);
+  }
 
   // Where the match came from inside the document, so a hit on a file called
   // "camscanner-1905084940.pdf" still shows why it matched.
