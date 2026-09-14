@@ -9,6 +9,10 @@ const nextConfig = {
   outputFileTracingExcludes: {
     '*': ['private-uploads/**'],
   },
+  outputFileTracingIncludes: {
+    '/*': ['./prisma/dev.db'],
+    '/**/*': ['./prisma/dev.db'],
+  },
   async redirects() {
     return [
       // Dashboard → root (the new signed-in home)

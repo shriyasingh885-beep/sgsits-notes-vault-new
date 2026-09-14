@@ -25,10 +25,9 @@ export default async function NotePage({ params }: { params: { id: string } }) {
   ]);
   if (!resource) notFound();
 
-  await prisma.resource.update({
-    where: { id: resource.id },
-    data: { views: { increment: 1 } },
-  });
+  prisma.resource
+    .update({ where: { id: resource.id }, data: { views: { increment: 1 } } })
+    .catch(() => {});
 
   const subtitle = [resource.subject?.name, resource.unit ? `Unit ${resource.unit.number}` : null]
     .filter(Boolean)

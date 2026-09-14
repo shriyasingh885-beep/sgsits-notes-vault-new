@@ -18,30 +18,42 @@ export const dynamic = 'force-dynamic';
  * — every number and list below is a real, site-wide fact about the library.
  */
 export default async function HomePage() {
-  const [subjectCount, noteCount, pyqCount, pageSum, recentNotes, topNotes, topSubjects] =
-    await Promise.all([
-      prisma.subject.count(),
-      prisma.resource.count({ where: { status: 'APPROVED' } }),
-      prisma.resource.count({ where: { status: 'APPROVED', type: 'PYQ' } }),
-      prisma.resource.aggregate({ where: { status: 'APPROVED' }, _sum: { pageCount: true } }),
-      prisma.resource.findMany({
-        where: { status: 'APPROVED' },
-        orderBy: { createdAt: 'desc' },
-        take: 6,
-        include: { subject: true, uploadedBy: true },
-      }),
-      prisma.resource.findMany({
-        where: { status: 'APPROVED' },
-        orderBy: { views: 'desc' },
-        take: 6,
-        include: { subject: true, uploadedBy: true },
-      }),
-      prisma.subject.findMany({
-        take: 8,
-        orderBy: { resources: { _count: 'desc' } },
-        include: { _count: { select: { resources: true } } },
-      }),
-    ]);
+  let subjectCount = 0,
+    noteCount = 0,
+    pyqCount = 0,
+    pageSum = { _sum: { pageCount: 0 as number | null } },
+    recentNotes: any[] = [],
+    topNotes: any[] = [],
+    topSubjects: any[] = [];
+
+  try {
+    [subjectCount, noteCount, pyqCount, pageSum, recentNotes, topNotes, topSubjects] =
+      await Promise.all([
+        prisma.subject.count(),
+        prisma.resource.count({ where: { status: 'APPROVED' } }),
+        prisma.resource.count({ where: { status: 'APPROVED', type: 'PYQ' } }),
+        prisma.resource.aggregate({ where: { status: 'APPROVED' }, _sum: { pageCount: true } }),
+        prisma.resource.findMany({
+          where: { status: 'APPROVED' },
+          orderBy: { createdAt: 'desc' },
+          take: 6,
+          include: { subject: true, uploadedBy: true },
+        }),
+        prisma.resource.findMany({
+          where: { status: 'APPROVED' },
+          orderBy: { views: 'desc' },
+          take: 6,
+          include: { subject: true, uploadedBy: true },
+        }),
+        prisma.subject.findMany({
+          take: 8,
+          orderBy: { resources: { _count: 'desc' } },
+          include: { _count: { select: { resources: true } } },
+        }),
+      ]);
+  } catch (err) {
+    console.error("Failed to query dashboard stats:", err);
+  }
 
   const bookmarkedIds = getBookmarkedIds();
   const pages = pageSum._sum.pageCount ?? 0;
