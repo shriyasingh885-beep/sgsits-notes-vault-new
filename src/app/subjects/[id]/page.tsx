@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function SubjectDetailPage({ params }: { params: { id: string } }) {
   let subject: any = null;
-  let bookmarkedIds: string[] = [];
+  let bookmarkedIds = new Set<string>();
 
   try {
     const [subRes, bIds] = await Promise.all([
@@ -40,7 +40,7 @@ export default async function SubjectDetailPage({ params }: { params: { id: stri
                 {subject.code}
               </span>
             )}
-            <span>{subject.units.slice(0, 3).map((u) => u.title).join(' · ')}</span>
+            <span>{subject.units.slice(0, 3).map((u: any) => u.title).join(' · ')}</span>
           </span>
         }
         crumbs={[{ label: 'Subjects', href: '/subjects' }, { label: subject.name }]}

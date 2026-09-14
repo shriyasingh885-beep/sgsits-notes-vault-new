@@ -6,12 +6,14 @@ const nextConfig = {
     config.resolve.alias.canvas = false;
     return config;
   },
-  outputFileTracingExcludes: {
-    '*': ['private-uploads/**'],
-  },
-  outputFileTracingIncludes: {
-    '/*': ['./prisma/dev.db'],
-    '/**/*': ['./prisma/dev.db'],
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': ['private-uploads/**'],
+    },
+    outputFileTracingIncludes: {
+      '/*': ['./prisma/dev.db'],
+      '/**/*': ['./prisma/dev.db'],
+    },
   },
   async redirects() {
     return [

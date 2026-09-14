@@ -21,7 +21,7 @@ export default async function NotesPage({
   if (year && year !== 'all') where.academicYear = parseInt(year, 10);
 
   let notes: any[] = [];
-  let bookmarkedIds: string[] = [];
+  let bookmarkedIds = new Set<string>();
   let years: number[] = [];
 
   try {
