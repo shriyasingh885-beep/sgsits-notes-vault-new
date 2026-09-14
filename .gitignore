@@ -49,3 +49,7 @@ prisma/dev.db.bak-*
 
 __pycache__/
 *.pyc
+
+# archived duplicates from past deduplication
+private-uploads/_archived-duplicates/
+
